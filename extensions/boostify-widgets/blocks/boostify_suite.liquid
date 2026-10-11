@@ -1,0 +1,385 @@
+{% comment %}
+  Boostify 4-in-1: The Zero-Lag Store Conversion Suite
+  Features:
+  1. Smart Sticky Add to Cart Bar
+  2. Dynamic Free Shipping Progress Bar
+  3. Floating WhatsApp Instant Connect
+  4. Vector Trust & Security Badges
+{% endcomment %}
+
+<style>
+  /* Base Container Styles */
+  #boostify-root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    z-index: 999999;
+  }
+
+  /* 1. Free Shipping Bar (Top of Store) */
+  .boostify-shipping-bar {
+    background: {{ block.settings.shipping_bar_bg }};
+    color: {{ block.settings.shipping_bar_text_color }};
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .boostify-progress-track {
+    background: rgba(255,255,255,0.3);
+    height: 6px;
+    border-radius: 999px;
+    max-width: 380px;
+    margin: 6px auto 0;
+    overflow: hidden;
+  }
+  .boostify-progress-fill {
+    background: {{ block.settings.shipping_progress_color }};
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 999px;
+  }
+
+  /* 2. Smart Sticky Add to Cart Bar (Bottom Dock) */
+  .boostify-sticky-cart {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: {{ block.settings.sticky_bar_bg }};
+    border-top: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+    padding: 12px 20px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 999998;
+    box-sizing: border-box;
+    transition: transform 0.3s ease;
+  }
+  .boostify-sticky-cart.active {
+    display: flex;
+  }
+  .boostify-prod-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 60%;
+  }
+  .boostify-prod-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #e5e7eb;
+  }
+  .boostify-prod-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: {{ block.settings.sticky_bar_text_color }};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .boostify-prod-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #10B981;
+  }
+  .boostify-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .boostify-add-btn {
+    background: {{ block.settings.button_bg_color }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .boostify-add-btn:hover {
+    opacity: 0.92;
+  }
+  .boostify-add-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* 3. Floating WhatsApp Connect Bubble */
+  .boostify-whatsapp-btn {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    background: #25D366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4);
+    z-index: 999997;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+  .boostify-whatsapp-btn:hover {
+    transform: scale(1.08);
+  }
+  .boostify-whatsapp-btn svg {
+    width: 30px;
+    height: 30px;
+    fill: white;
+  }
+
+  /* 4. Trust Badges */
+  .boostify-trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px;
+    font-size: 12px;
+    color: #6B7280;
+  }
+
+  @media (max-width: 768px) {
+    .boostify-prod-info {
+      max-width: 50%;
+    }
+    .boostify-prod-title {
+      font-size: 12px;
+    }
+    .boostify-add-btn {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+    .boostify-whatsapp-btn {
+      bottom: 80px;
+      right: 16px;
+      width: 46px;
+      height: 46px;
+    }
+  }
+</style>
+
+<div id="boostify-root">
+
+  <!-- 1. Free Shipping Goal Progress Bar -->
+  {% if block.settings.enable_shipping_bar %}
+    <div class="boostify-shipping-bar" id="boostifyShippingBar">
+      <div id="boostifyShippingText">Free shipping on orders over {{ cart.currency.symbol }}{{ block.settings.shipping_goal_amount }}!</div>
+      <div class="boostify-progress-track">
+        <div class="boostify-progress-fill" id="boostifyProgressFill"></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- 2. Smart Sticky Add to Cart (Only on Product Pages) -->
+  {% if template contains 'product' and block.settings.enable_sticky_cart %}
+    <div class="boostify-sticky-cart" id="boostifyStickyBar">
+      <div class="boostify-prod-info">
+        <img class="boostify-prod-img" src="{{ product.featured_image | image_url: width: 120 }}" alt="{{ product.title | escape }}">
+        <div>
+          <div class="boostify-prod-title">{{ product.title }}</div>
+          <div class="boostify-prod-price" id="boostifyStickyPrice">{{ product.selected_or_first_available_variant.price | money }}</div>
+        </div>
+      </div>
+      <div class="boostify-btn-group">
+        <button type="button" class="boostify-add-btn" id="boostifyAddBtn" onclick="boostifyAddToCart()">
+          {{ block.settings.button_text }}
+        </button>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- 3. Floating WhatsApp Instant Connect -->
+  {% if block.settings.enable_whatsapp and block.settings.whatsapp_number != blank %}
+    <a href="https://wa.me/{{ block.settings.whatsapp_number }}?text=Hi!%20I%20have%20a%20question%20about%20your%20store." 
+       target="_blank" class="boostify-whatsapp-btn" title="Chat on WhatsApp">
+      <svg viewBox="0 0 24 24">
+        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.053-1.077-.07-.442-.123-1.042-.357-1.802-.916-1.144-.842-1.89-2.073-2.012-2.235-.123-.163-.642-.857-.642-1.636 0-.78.406-1.164.55-1.324.144-.162.316-.203.422-.203.106 0 .212.001.305.006.098.005.23-.037.36.276.134.324.457 1.115.497 1.196.041.082.068.178.014.285-.054.108-.082.175-.162.27-.081.095-.171.213-.244.286-.082.081-.168.17-.072.335.096.164.426.703.914 1.138.629.56 1.16.733 1.324.815.164.081.26.068.356-.041.096-.11.411-.479.521-.643.11-.164.219-.137.369-.082.15.055.952.449 1.116.531.164.082.274.123.315.191.041.069.041.398-.103.803z"/>
+      </svg>
+    </a>
+  {% endif %}
+
+</div>
+
+<script>
+  // 1. Dynamic Free Shipping Goal Engine
+  const SHIPPING_GOAL = {{ block.settings.shipping_goal_amount | default: 50 | times: 100 }};
+  
+  function updateFreeShippingBar() {
+    fetch('/cart.js')
+      .then(res => res.json())
+      .then(cart => {
+        const remaining = SHIPPING_GOAL - cart.total_price;
+        const fillEl = document.getElementById('boostifyProgressFill');
+        const textEl = document.getElementById('boostifyShippingText');
+        
+        if (remaining <= 0) {
+          if (fillEl) fillEl.style.width = '100%';
+          if (textEl) textEl.innerHTML = '🎉 Congratulations! You unlocked <strong>FREE Shipping!</strong>';
+        } else {
+          const pct = Math.min((cart.total_price / SHIPPING_GOAL) * 100, 100);
+          if (fillEl) fillEl.style.width = pct + '%';
+          const remMoney = (remaining / 100).toFixed(2);
+          if (textEl) textEl.innerHTML = `Add <strong>${cart.currency} $${remMoney}</strong> more for <strong>FREE Shipping!</strong>`;
+        }
+      })
+      .catch(() => {});
+  }
+  updateFreeShippingBar();
+
+  // 2. Smart Sticky Add to Cart Scroll Detection
+  const nativeForm = document.querySelector('form[action*="/cart/add"]');
+  const stickyBar = document.getElementById('boostifyStickyBar');
+
+  if (nativeForm && stickyBar) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // જ્યારે મેઈન Add to Cart બટન સ્ક્રીનની બહાર જાય ત્યારે જ સ્ટીકી બાર ખુલે
+        if (!entry.isIntersecting) {
+          stickyBar.classList.add('active');
+        } else {
+          stickyBar.classList.remove('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    observer.observe(nativeForm);
+  }
+
+  // 3. Fast Ajax Add to Cart (Zero Page Reload)
+  function boostifyAddToCart() {
+    const btn = document.getElementById('boostifyAddBtn');
+    btn.innerText = 'Adding...';
+    btn.disabled = true;
+
+    const variantId = {{ product.selected_or_first_available_variant.id | default: 0 }};
+    
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: variantId, quantity: 1 })
+    })
+    .then(res => res.json())
+    .then(() => {
+      btn.innerText = 'Added! ✓';
+      updateFreeShippingBar();
+      setTimeout(() => {
+        btn.innerText = '{{ block.settings.button_text }}';
+        btn.disabled = false;
+        // ઓટોમેટિક કાર્ટ ડ્રોઅર ખોલો અથવા /cart પર જાઓ
+        window.location.href = '/cart';
+      }, 800);
+    })
+    .catch(() => {
+      btn.innerText = 'Error';
+      btn.disabled = false;
+    });
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Boostify 4-in-1 Suite",
+  "target": "body",
+  "settings": [
+    {
+      "type": "header",
+      "content": "1. Sticky Add to Cart Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_cart",
+      "label": "Enable Sticky Add to Cart",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Add to Cart ⚡"
+    },
+    {
+      "type": "color",
+      "id": "sticky_bar_bg",
+      "label": "Sticky Bar Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "sticky_bar_text_color",
+      "label": "Text Color",
+      "default": "#111827"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button Color",
+      "default": "#111827"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "2. Free Shipping Bar Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shipping_bar",
+      "label": "Enable Free Shipping Bar",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "shipping_goal_amount",
+      "label": "Free Shipping Threshold Amount",
+      "default": 50
+    },
+    {
+      "type": "color",
+      "id": "shipping_bar_bg",
+      "label": "Shipping Bar Background",
+      "default": "#111827"
+    },
+    {
+      "type": "color",
+      "id": "shipping_bar_text_color",
+      "label": "Shipping Bar Text Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "shipping_progress_color",
+      "label": "Progress Fill Color",
+      "default": "#10B981"
+    },
+    {
+      "type": "header",
+      "content": "3. WhatsApp Connect Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_whatsapp",
+      "label": "Enable Floating WhatsApp",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Number (with country code, e.g. 14161234567)",
+      "default": "14161234567"
+    }
+  ]
+}
+{% endschema %}
