@@ -1,4 +1,3 @@
-import "@shopify/shopify-app-remix/adapters/node";
 import {
   ApiVersion,
   AppDistribution,
@@ -27,7 +26,7 @@ const shopify = shopifyApp({
       amount: 6.99,
       currencyCode: "USD",
       interval: BillingInterval.Every30Days,
-      trialDays: 7, // 7 દિવસનો ફ્રી ટ્રાયલ જેથી દુકાનદારો તરત જોડાય
+      trialDays: 7,
     },
   },
   future: {
