@@ -3,11 +3,11 @@ import {
   AppDistribution,
   shopifyApp,
   BillingInterval,
-} from "@shopify/shopify-app-remix/server";
+} from "@shopify/shopify-app-react-router/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
-// આપણો સત્તાવાર $6.99 નો પ્રો પ્લાન
+// સત્તાવાર $6.99 નો પ્રો પ્લાન
 export const MONTHLY_PLAN = "Boostify Pro 4-in-1 Plan";
 
 const shopify = shopifyApp({
@@ -19,8 +19,6 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
-  
-  // 💰 OFFICIAL SHOPIFY RECURRING BILLING ENGINE ($6.99/mo)
   billing: {
     [MONTHLY_PLAN]: {
       amount: 6.99,
