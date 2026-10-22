@@ -1,42 +1,44 @@
 import crypto from "node:crypto";
 
-// ૧. Shopify ના રોબોટ માટે (POST Request)
+// ૧. GET Request માટે (આનાથી પેલા 'no loader' વાળી એરર કાયમ માટે સોલ્વ થઈ જશે!)
+export const loader = async () => {
+  return new Response("Compliance Webhook Endpoint Live & Active", {
+    status: 200,
+    headers: { "Content-Type": "text/plain" },
+  });
+};
+
+// ૨. Shopify Webhook ટેસ્ટ માટે (POST Request & HMAC Security)
 export const action = async ({ request }) => {
   try {
     const rawBody = await request.text();
     const hmacHeader = request.headers.get("x-shopify-hmac-sha256");
 
-    // જો કોઈ HMAC સિગ્નેચર ન હોય તો 401 Unauthorized
+    // જો HMAC Header ન હોય તો 401 Unauthorized
     if (!hmacHeader) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response("Missing HMAC Signature", { status: 401 });
     }
 
     // સત્તાવાર HMAC Signature ચેક કરો
     const secret = process.env.SHOPIFY_API_SECRET || "";
-    const generatedHash = crypto
+    const hash = crypto
       .createHmac("sha256", secret)
       .update(rawBody, "utf8")
       .digest("base64");
 
-    if (generatedHash !== hmacHeader) {
-      return new Response("Unauthorized", { status: 401 });
+    // જો Signature ખોટી હોય તો ફરજિયાત 401 Unauthorized આપવું
+    if (hash !== hmacHeader) {
+      return new Response("Invalid HMAC Signature", { status: 401 });
     }
 
+    // સાચી Signature હોય તો 200 OK
     return new Response("OK", { status: 200 });
   } catch (err) {
     return new Response("Unauthorized", { status: 401 });
   }
 };
 
-// ૨. બ્રાઉઝર ચેક માટે (GET Request)
-export const loader = async () => {
-  return new Response("Compliance Webhook Live & Ready", { 
-    status: 200,
-    headers: { "Content-Type": "text/plain" }
-  });
-};
-
-// ૩. React Router ને ક્રેશ થતો અટકાવવા માટે (Default Component)
-export default function ComplianceWebhookPage() {
+// ૩. React Router Component
+export default function WebhookPage() {
   return null;
 }
