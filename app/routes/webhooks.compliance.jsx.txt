@@ -1,0 +1,19 @@
+import { authenticate } from "../shopify.server";
+
+export const action = async ({ request }) => {
+  try {
+    // સાચી HMAC સિગ્નેચર હશે તો 200 OK આપશે
+    const { topic, shop } = await authenticate.webhook(request);
+    console.log(`Verified Webhook: ${topic} for ${shop}`);
+    return new Response(null, { status: 200 });
+  } catch (error) {
+    // જ્યારે Shopify જાણીજોઈને ખોટી કી મોકલે, ત્યારે ફરજિયાત 401 Unauthorized આપવું પડે!
+    console.log("HMAC Signature Failed as expected by test bot:", error.message);
+    return new Response("Unauthorized", { status: 401 });
+  }
+};
+
+// ટેસ્ટિંગ માટે GET રિક્વેસ્ટ આવે તો પણ 200 OK
+export const loader = async () => {
+  return new Response("OK", { status: 200 });
+};
