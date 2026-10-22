@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "4464ac88dc3162b2768f0dedfc69f15d"
-application_url = "https://example.com"
+application_url = "https://boostify-4-in-1.onrender.com"
 embedded = true
 name = "boostify-4-in-1"
 
@@ -45,8 +45,9 @@ api_version = "2027-01"
   topics = [ "app/scopes_update" ]
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://boostify-4-in-1.onrender.com/auth/callback",
+  "https://boostify-4-in-1.onrender.com/auth/shopify/callback",
+  "https://boostify-4-in-1.onrender.com/api/auth/callback" ]
 
 [build]
-include_config_on_deploy = true
 automatically_update_urls_on_dev = true
